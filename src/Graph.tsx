@@ -14,7 +14,7 @@ interface IProps {
  * Perspective library adds load to HTMLElement prototype.
  * This interface acts as a wrapper for Typescript compiler.
  */
-interface PerspectiveViewerElement {
+interface PerspectiveViewerElement extends HTMLElement{
   load: (table: Table) => void,
 }
 
@@ -32,7 +32,7 @@ class Graph extends Component<IProps, {}> {
 
   componentDidMount() {
     // Get element to attach the table from the DOM.
-    const elem: PerspectiveViewerElement = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+    const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
 
     const schema = {
       stock: 'string',
@@ -49,6 +49,15 @@ class Graph extends Component<IProps, {}> {
 
       // Add more Perspective configurations here.
       elem.load(this.table);
+      elem.setAttribute('view', 'y_line'); // add view attribute
+      elem.setAttribute('column-pivots', '["stock"]'); // add column-pivots attribute
+      elem.setAttribute('row-pivots', '["timestamp"]'); // add row-pivots attribute
+      elem.setAttribute('columns', '["top_ask_price"]'); // add columns attribute
+      elem.setAttribute('aggregates', `
+      {"stock": "distinct count",
+      "top_ask_price": "avg",
+      "top_bid_price": "avg",
+      "timestamp": "distinct count"}`); // add aggregates attribute
     }
   }
 
@@ -60,8 +69,8 @@ class Graph extends Component<IProps, {}> {
       this.table.update(this.props.data.map((el: any) => {
         // Format the data from ServerRespond to the schema
         return {
-          stock: el.stock,
-          top_ask_price: el.top_ask && el.top_ask.price || 0,
+          stock: el.stock, // eslint-disable-next-line
+          top_ask_price: el.top_ask && el.top_ask.price || 0, // eslint-disable-next-line
           top_bid_price: el.top_bid && el.top_bid.price || 0,
           timestamp: el.timestamp,
         };
